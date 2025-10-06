@@ -21,11 +21,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Flutter (stable 3.27.0)
+      - name: Setup Flutter (stable 3.35.5)
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.27.0'
+          flutter-version: '3.35.5'
 
       - name: Enable web
         run: flutter config --enable-web
