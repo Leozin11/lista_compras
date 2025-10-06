@@ -1,61 +1,19 @@
-name: Deploy Flutter Web to GitHub Pages
+name: lista_compras
+description: "Lista de compras simples (Flutter) com ações embutidas e estrutura src/."
+publish_to: "none"
 
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+  flutter: '>=3.27.0'
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+dependencies:
+  flutter:
+    sdk: flutter
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-
-      - name: Enable web (só por garantia)
-        run: flutter config --enable-web
-
-      - name: Criar pasta web (se faltar)
-        run: flutter create . --platforms web
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build web
-        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
-
-      # opcional: fallback para rotas (não estraga nada mesmo sem rotas)
-      - name: SPA fallback
-        run: cp build/web/index.html build/web/404.html
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build/web
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+flutter:
+  uses-material-design: true
