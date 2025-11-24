@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
+import 'package:http/http.dart' as http;
 
 class ShoppingListPage extends StatefulWidget {
   const ShoppingListPage({super.key});
@@ -11,6 +15,29 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   final TextEditingController _ctrl = TextEditingController();
   final List<String> _items = <String>[];
   final List<bool> _done = <bool>[];
+
+  Future<void> _checkout() async {
+    const String listId = '123';
+    const String email = 'usuario@teste.com';
+
+    final url = Uri.parse('http://localhost:3000/lists/$listId/checkout');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode == 202) {
+        _toast("Checkout enviado! Processamento assíncrono iniciado.");
+      } else {
+        _toast("Erro no checkout: ${response.statusCode}");
+      }
+    } catch (e) {
+      _toast("Erro de conexão: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +82,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
               ],
             ),
           ),
+
           if (total > 0)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -62,11 +90,30 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _Stat(icon: Icons.list, label: 'Total', value: '$total'),
-                  _Stat(icon: Icons.check_circle, label: 'Comprados', value: '$bought'),
-                  _Stat(icon: Icons.pending, label: 'Restantes', value: '$left'),
+                  _Stat(
+                      icon: Icons.check_circle,
+                      label: 'Comprados',
+                      value: '$bought'),
+                  _Stat(
+                      icon: Icons.pending, label: 'Restantes', value: '$left'),
                 ],
               ),
             ),
+
+          // 🔥 BOTÃO DE CHECKOUT AQUI 🔥
+          if (total > 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _checkout,
+                  icon: const Icon(Icons.shopping_bag),
+                  label: const Text("Finalizar Compra"),
+                ),
+              ),
+            ),
+
           Expanded(
             child: total == 0
                 ? const Center(child: Text('Sem itens'))
@@ -92,7 +139,8 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                           title: Text(
                             _items[i],
                             style: TextStyle(
-                              decoration: comprado ? TextDecoration.lineThrough : null,
+                              decoration:
+                                  comprado ? TextDecoration.lineThrough : null,
                               color: comprado ? Colors.grey : null,
                             ),
                           ),
@@ -137,8 +185,12 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
             title: const Text('Remover'),
             content: Text('Remover "${_items[i]}"?'),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Remover')),
+              TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancelar')),
+              TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Remover')),
             ],
           ),
         ) ??
@@ -163,8 +215,12 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
             title: const Text('Limpar lista'),
             content: const Text('Deseja remover todos os itens?'),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Limpar')),
+              TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancelar')),
+              TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Limpar')),
             ],
           ),
         ) ??
